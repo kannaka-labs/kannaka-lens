@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kannaka-lens"
+version = "0.1.0"
+description = "Media perception that runs on the hardware we actually have"
+requires-python = ">=3.12"
+license-files = ["LICENSE"]
+# Deliberately empty. The v1 interactive path is ffmpeg plus the standard
+# library; every model-backed pass is an optional extra, because a dependency
+# that cannot be installed here is how the previous attempt died (ADR-0001).
+dependencies = []
+
+[project.optional-dependencies]
+# Installed only on a node that will actually run the transcript pass.
+speech = ["faster-whisper>=1.0"]
+
+[project.scripts]
+lens = "lens.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

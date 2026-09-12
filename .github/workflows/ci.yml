@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: ffmpeg is really here
+        # --strict below refuses skips, but only if ffmpeg is present to be
+        # found. Assert it before trusting that.
+        run: ffmpeg -version | head -1 && ffprobe -version | head -1
+      - name: tests, mutation, and no silent skips
+        run: sh run-tests.sh --strict
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build the one execution target
+        run: docker build -t kannaka-lens:ci .
+      - name: the image runs its own suite
+        run: |
+          docker run --rm --entrypoint sh kannaka-lens:ci -c \
+            'cd /opt/lens && sh run-tests.sh --strict'
+      - name: the cli works in the image
+        run: docker run --rm kannaka-lens:ci --help
