@@ -57,4 +57,24 @@ that the next person does not have to reconstruct it.
 
 ## Status
 
-Early. The ADR is the contract; the code is arriving behind it. Nothing here is published yet.
+Early, and running. The stage contract, the three ffmpeg stages, the container and the test
+discipline are in. Perception, storyboard, transcript and memory are next.
+
+Measured on `debain2` (20 cores, no GPU), inside the container, 2026-09-12:
+
+| | |
+|---|---|
+| 10 s of 1280x720p30, all three stages | **2.68 s** (probe 0.27, normalise 2.15, audio 0.26) |
+| the same clip again | nothing re-run; every stage resumed from the record |
+| image size | 585 MB, ffmpeg included so no host needs it installed |
+
+So the v1 path is roughly four times faster than realtime on a machine with no graphics card,
+which is the whole argument of [ADR-0001](./docs/adr/ADR-0001-kannaka-lens.md).
+
+### How it is checked
+
+`sh run-tests.sh --strict` runs 23 contract tests, 7 end-to-end tests over real media, and 11
+mutants of the stage contract — and refuses to pass if a suite *skipped* itself, because the
+media tests skip where `ffmpeg` is absent and would otherwise read as green while testing
+nothing. The end-to-end tests ask `ffprobe` whether the output is really constant-rate h264 and
+16 kHz mono PCM, rather than asking our own record whether our own record is correct.
