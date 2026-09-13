@@ -15,6 +15,24 @@ strict=${1:-}
 fail=0
 found=0
 
+# --integration runs the suites that need the kannaka binary. They FAIL rather
+# than skip when it is absent, so this mode cannot come back green having tested
+# nothing.
+if [ "$strict" = "--integration" ]; then
+  for suite in tests/integration_*.py; do
+    [ -f "$suite" ] || continue
+    echo "== $suite"
+    # Capture, THEN test the status. `python ... | tail` reports tail's exit
+    # code, so `|| fail=1` on a pipeline never fires and a failing suite prints
+    # green -- which is exactly what this runner caught itself doing.
+    out=$(PYTHONPATH=src python "$suite" 2>&1) || fail=1
+    echo "$out" | tail -4
+  done
+  [ "$fail" -eq 0 ] || { echo; echo "FAILED"; exit 1; }
+  echo; echo "integration green"
+  exit 0
+fi
+
 for suite in tests/test_*.py; do
   [ -f "$suite" ] || continue
   found=$((found + 1))
