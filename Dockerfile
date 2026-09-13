@@ -20,3 +20,8 @@ VOLUME ["/work"]
 WORKDIR /work
 ENTRYPOINT ["lens"]
 CMD ["--help"]
+
+# Pass --user "$(id -u):$(id -g)" when mounting a host directory, or every file
+# lens writes comes back owned by root and the operator cannot delete their own
+# output. ./lens-docker does this for you. No USER is baked in here because the
+# right uid is the caller's, and it is not knowable at build time.

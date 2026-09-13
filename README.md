@@ -71,6 +71,17 @@ Measured on `debain2` (20 cores, no GPU), inside the container, 2026-09-12:
 So the v1 path is roughly four times faster than realtime on a machine with no graphics card,
 which is the whole argument of [ADR-0001](./docs/adr/ADR-0001-kannaka-lens.md).
 
+### Running it
+
+```sh
+docker build -t kannaka-lens:dev .
+./lens-docker ~/clips run whatever.mp4 --project whatever.lens
+```
+
+`lens-docker` mounts a host directory and passes your uid through. Skip it and the container
+runs as root, so every file lens writes comes back owned by root and you cannot delete your own
+output.
+
 ### How it is checked
 
 `sh run-tests.sh --strict` runs 23 contract tests, 7 end-to-end tests over real media, and 11

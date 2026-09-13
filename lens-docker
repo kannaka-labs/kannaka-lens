@@ -1,0 +1,24 @@
+#!/bin/sh
+# Run lens in its container against a directory on this host.
+#
+#   ./lens-docker /path/to/clips run clips/whatever.mp4
+#
+# The first argument is the host directory to mount at /work; everything after
+# it is passed to lens. The --user flag is the point of this script: without it
+# the container runs as root and every file it writes -- the normalised video,
+# the project record -- comes back owned by root, and the operator cannot
+# delete their own output. Found the hard way on debain2, 2026-09-12.
+set -eu
+
+IMAGE=${LENS_IMAGE:-kannaka-lens:dev}
+
+[ $# -ge 1 ] || { echo "usage: $0 HOST_DIR [lens args...]" >&2; exit 2; }
+work=$1
+shift
+[ -d "$work" ] || { echo "$0: $work is not a directory" >&2; exit 2; }
+work=$(cd "$work" && pwd)
+
+exec docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  -v "$work:/work" \
+  "$IMAGE" "$@"
