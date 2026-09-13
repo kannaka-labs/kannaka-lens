@@ -12,8 +12,9 @@ from pathlib import Path
 
 from .contract import StageAborted, run_pipeline, summarise
 from .stages.media import STAGES as MEDIA_STAGES
+from .stages.perceive import STAGES as PERCEIVE_STAGES
 
-PIPELINE = list(MEDIA_STAGES)
+PIPELINE = list(MEDIA_STAGES) + list(PERCEIVE_STAGES)
 
 
 def _run(args: argparse.Namespace) -> int:

@@ -1,23 +1,38 @@
 #!/bin/sh
-# Every suite, and a skip is not a pass.
+# Every suite, discovered not listed, and a skip is not a pass.
 #
-# The media suite skips itself where ffmpeg is absent, which on a CI box that
-# was supposed to have ffmpeg would read as green while testing nothing. So
-# --strict refuses any skip.
+# Two traps this avoids:
+#
+#   * a hardcoded suite list. The suites are globbed, because a list means a new
+#     test file silently never runs -- kannaka-radio shipped that bug and needed
+#     a guard test to catch it. Here the glob IS the guard.
+#   * a skip reading as green. The media and perception suites skip themselves
+#     where ffmpeg or the kannaka binary is absent, so on a box that was meant to
+#     have them a green run would prove nothing. --strict refuses any skip.
 set -eu
 
 strict=${1:-}
 fail=0
+found=0
 
-for suite in tests/test_contract.py tests/test_media.py; do
+for suite in tests/test_*.py; do
+  [ -f "$suite" ] || continue
+  found=$((found + 1))
   echo "== $suite"
   out=$(PYTHONPATH=src python "$suite" 2>&1) || fail=1
   echo "$out" | tail -3
   if [ "$strict" = "--strict" ] && echo "$out" | grep -q "skipped="; then
-    echo "STRICT: $suite skipped tests -- $(echo "$out" | grep -o 'skipped=[0-9]*')"
+    echo "STRICT: $suite $(echo "$out" | grep -o 'skipped=[0-9]*') -- a skipped suite is not a pass"
     fail=1
   fi
 done
+
+# Zero suites would otherwise be the quietest possible green.
+if [ "$found" -eq 0 ]; then
+  echo "no test suites found under tests/ -- that is a failure, not a pass"
+  exit 1
+fi
+echo "== suites run: $found"
 
 echo "== mutation"
 PYTHONPATH=src python scripts/mutate.py || fail=1
