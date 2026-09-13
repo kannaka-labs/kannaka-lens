@@ -122,9 +122,40 @@ side database. This is the reason to build it here rather than adopt a tool.
 - The proven production pieces (voice cascade, loudness discipline, slideshow renderer) get a Linux
   home, which is the third constraint and the one most likely to be skipped.
 
+## Measured after the fact: what the eye's features are actually worth
+
+The section below deferred the highlight score until the features were in hand. They now are —
+`kannaka-memory` PR #945 wired `src/eye/` and measured it, so the answer is recorded here rather
+than left open.
+
+**Cost**, warm release build, 2 fps, 320 px wide, 10-second clips:
+
+| stage | cost |
+|---|---|
+| decode | 0.5–2.1 s per 10 s clip |
+| features | ~50 ms per frame |
+| total | 150–190 ms per second of video |
+
+**Discriminativeness is split, and this decides the highlight stage.**
+
+- The **spatial 192 works.** Off-diagonal correlation averages 0.49 and separates to 0.05 between a
+  navy field and Conway's life.
+- The **clip-level temporal 128 does not.** It averages 0.69 and reaches **0.967 between a panning
+  SMPTE chart and a mandelbrot zoom**, which look nothing alike. Roughly 76 of its 128 dimensions
+  ever carry a value; the rest is fixed padding. Every entry is a clip-level aggregate, so it cannot
+  distinguish *when* anything happened.
+
+So the highlight score stands on the spatial band and the per-frame sequence, and does **not** use
+the clip-level temporal vector. Filed upstream as a defect rather than designed around silently.
+
+Three real defects surfaced the moment that code got its first caller, which is the argument for
+wiring dead code rather than admiring it: 32 of the 192 spatial dimensions were a hardcoded zero in
+every video ever encoded; block matching reported *maximum* motion for a static frame, because a flat
+block ties at every offset and the search kept the first; and `dominant_colors` lost half of any frame
+with vertical structure, because the k-means seed stride lined up with the row period.
+
 ## Not decided here
 
 Whether `lens` eventually absorbs the radio's production scripts or calls them. Whether the
-transcript pass runs on groundwave or in the qBraid rail. What the highlight score actually measures —
-that needs our own features in hand first, and inventing it before measuring is how you end up
-paraphrasing somebody else's.
+transcript pass runs on groundwave or in the qBraid rail. What the highlight score weights *within*
+the spatial band and the per-frame sequence — the bands are chosen now, the weighting is not.
