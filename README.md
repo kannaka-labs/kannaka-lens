@@ -42,6 +42,12 @@ not slow. They were unreachable. See [ADR-0001](./docs/adr/ADR-0001-kannaka-lens
 | **storyboard · chronemic · highlights** | keyframes over real shot boundaries; timing over real turns; scoring over our own features |
 | **memory** | the clip becomes recallable, not a row in a side database |
 
+Measured against ground truth we built — three visually unrelated three-second segments
+concatenated — the eye put the cuts at exactly 3.0 s and 6.0 s, and the storyboard took one keyframe
+from inside each segment. Nothing ranks on the clip-level temporal vector: it scores 0.967 between a
+panning colour chart and a mandelbrot zoom, which is recorded in the ADR and filed as
+kannaka-memory#948.
+
 Deferred on purpose, each for a stated reason rather than quietly: source separation, speaker and
 emotion embedding, reactions, face and pose analysis, voice cloning, lip-sync. They attach at defined
 seams if a GPU ever arrives.
@@ -57,8 +63,13 @@ that the next person does not have to reconstruct it.
 
 ## Status
 
-Early, and running. The stage contract, the three ffmpeg stages, the container and the test
-discipline are in. Perception, storyboard, transcript and memory are next.
+Early, and running. Five stages work end to end: `probe`, `normalise`, `audio`, `perceive` and
+`storyboard`. Transcript, chronemic and highlights are next.
+
+`perceive` calls the `kannaka` binary's `watch` verb — the Rust eye from ADR-0008, which had no
+callers at all until 2026-09-12. Shots, block-matching optical flow, colour, all on a CPU. Absent
+the binary the stage degrades and the run continues, which is the one rule doing its job rather
+than being described.
 
 Measured on `debain2` (20 cores, no GPU), inside the container, 2026-09-12:
 
