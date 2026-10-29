@@ -61,6 +61,14 @@ video and is re-derived freely here. Where a previous tool had genuine invention
 problem our own way or do not ship the capability. The reasoning is in ADR-0001 §2, written down so
 that the next person does not have to reconstruct it.
 
+## Through the QuantumOS hub
+
+`lens` is reachable from an AI through [QuantumOS's hub](https://github.com/kannaka-labs/QuantumOS/tree/main/tools/qos-hub)
+(ADR-0027, one policy-gated MCP endpoint for the constellation's CLIs): the hub's example config
+carries a `lens` entry whose `show --json` is allowed as a read and whose `run` asks the person
+first, because it spends minutes of CPU on a clip and writes what it saw into the HRM. The CLI's
+two verbs are the contract; nothing here changes for it.
+
 ## Status
 
 Early, and running. Five stages work end to end: `probe`, `normalise`, `audio`, `perceive` and
