@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Media perception that runs on the hardware we actually have"
 requires-python = ">=3.12"
 license-files = ["LICENSE"]
+readme = "README.md"
 # Deliberately empty. The v1 interactive path is ffmpeg plus the standard
 # library; every model-backed pass is an optional extra, because a dependency
 # that cannot be installed here is how the previous attempt died (ADR-0001).
@@ -22,3 +23,8 @@ lens = "lens.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.urls]
+Homepage = "https://github.com/kannaka-labs/kannaka-lens"
+Repository = "https://github.com/kannaka-labs/kannaka-lens"
+Issues = "https://github.com/kannaka-labs/kannaka-lens/issues"
